@@ -1,5 +1,7 @@
 package org.leave.chapter2.helper;
 
+import org.apache.commons.dbutils.QueryRunner;
+import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.leave.chapter2.util.PropsUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -7,10 +9,12 @@ import org.slf4j.LoggerFactory;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Properties;
 
 public class DatabaseHelper {
     private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseHelper.class);
+    private static final QueryRunner QUERY_RUNNNER = new QueryRunner();
 
     private static final String DRIVER;
     private static final String URL;
@@ -49,5 +53,18 @@ public class DatabaseHelper {
                 LOGGER.error("Close collection failure !", e);
             }
         }
+    }
+
+    public static <T> List<T> queryEntityList(Class<T> entityClass, Connection conn, String sql, Object... params){
+        List<T> entityList;
+        try{
+            entityList = QUERY_RUNNNER.query(conn, sql, new BeanListHandler<T>(entityClass), params);
+        } catch (SQLException e){
+            LOGGER.error("Query entity list failure !", e);
+            throw new RuntimeException(e);
+        } finally {
+            closeConnection(conn);
+        }
+        return entityList;
     }
 }
