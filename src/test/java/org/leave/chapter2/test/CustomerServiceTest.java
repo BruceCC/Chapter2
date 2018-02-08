@@ -6,7 +6,9 @@ import org.junit.Test;
 import org.leave.chapter2.model.Customer;
 import org.leave.chapter2.service.CustomerService;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class CustomerServiceTest {
     private final CustomerService customerService;
@@ -31,5 +33,31 @@ public class CustomerServiceTest {
         long id = 1;
         Customer customer = customerService.getCustomer(id );
         Assert.assertNotNull(customer);
+    }
+
+    @Test
+    public void createCustomerTest() throws Exception{
+        Map<String, Object> fieldMap = new HashMap<String, Object>();
+        fieldMap.put("name", "customer100");
+        fieldMap.put("contact", "John");
+        fieldMap.put("telephone", "13512345678");
+        boolean result = customerService.createCustomer(fieldMap);
+        Assert.assertTrue(result);
+    }
+
+    @Test
+    public void updateCustomerTest() throws Exception{
+        long id = 1;
+        Map<String, Object> fieldMap = new HashMap<String, Object>();
+        fieldMap.put("contact", "Eric");
+        boolean result = customerService.updateCustomer(id, fieldMap);
+        Assert.assertTrue(result);
+    }
+
+    @Test
+    public void deleteCustomerTest() throws Exception{
+        long id = 1;
+        boolean result = customerService.deleteCustomer(id);
+        Assert.assertTrue(result);
     }
 }
