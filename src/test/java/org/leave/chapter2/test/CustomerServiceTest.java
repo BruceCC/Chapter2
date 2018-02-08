@@ -3,6 +3,7 @@ package org.leave.chapter2.test;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.leave.chapter2.helper.DatabaseHelper;
 import org.leave.chapter2.model.Customer;
 import org.leave.chapter2.service.CustomerService;
 
@@ -18,14 +19,14 @@ public class CustomerServiceTest {
     }
 
     @Before
-    public void init(){
-        //TODO 初始化数据库
+    public void init() throws Exception{
+        DatabaseHelper.executeSqlFile("sql/customer_init.sql");
     }
 
     @Test
     public void getCustomerListTest() throws Exception{
         List<Customer> customerList = customerService.getCustomerList();
-        Assert.assertEquals(2, customerList.size());
+        Assert.assertEquals(4, customerList.size());
     }
 
     @Test
@@ -47,7 +48,7 @@ public class CustomerServiceTest {
 
     @Test
     public void updateCustomerTest() throws Exception{
-        long id = 4;
+        long id = 1;
         Map<String, Object> fieldMap = new HashMap<String, Object>();
         fieldMap.put("contact", "Eric");
         fieldMap.put("email", "Eric@mail.com");
@@ -57,7 +58,7 @@ public class CustomerServiceTest {
 
     @Test
     public void deleteCustomerTest() throws Exception{
-        long id = 4;
+        long id = 3;
         boolean result = customerService.deleteCustomer(id);
         Assert.assertTrue(result);
     }
