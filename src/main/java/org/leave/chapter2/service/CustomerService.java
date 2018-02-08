@@ -5,7 +5,6 @@ import org.leave.chapter2.model.Customer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
 
@@ -13,18 +12,13 @@ public class CustomerService  {
     private static final Logger LOGGER = LoggerFactory.getLogger(CustomerService.class);
 
     public List<Customer> getCustomerList(){
-        Connection conn = DatabaseHelper.getConnection();
-        try{
-            String sql = "select * from customer";
-            return DatabaseHelper.queryEntityList(Customer.class, conn, sql);
-        }  finally {
-            DatabaseHelper.closeConnection(conn);
-        }
+        String sql = "select * from customer";
+        return DatabaseHelper.queryEntityList(Customer.class, sql);
     }
 
     public Customer getCustomer(long id){
-        //TODO
-        return null;
+        String sql = "select * from customer where ";
+        return DatabaseHelper.queryEntity(Customer.class, sql);
     }
 
     public boolean createCustomer(Map<String, Object> fieldMap){

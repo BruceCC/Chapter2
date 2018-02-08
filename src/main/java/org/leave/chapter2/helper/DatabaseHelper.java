@@ -1,6 +1,7 @@
 package org.leave.chapter2.helper;
 
 import org.apache.commons.dbutils.QueryRunner;
+import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.leave.chapter2.util.PropsUtil;
 import org.slf4j.Logger;
@@ -15,6 +16,7 @@ import java.util.Properties;
 public class DatabaseHelper {
     private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseHelper.class);
     private static final QueryRunner QUERY_RUNNNER = new QueryRunner();
+    private static final ThreadLocal<Connection> CONNECTION_HOLDER = new ThreadLocal<Connection>();
 
     private static final String DRIVER;
     private static final String URL;
@@ -36,35 +38,59 @@ public class DatabaseHelper {
     }
 
     public static Connection getConnection(){
-        Connection conn = null;
-        try{
-            conn =  DriverManager.getConnection(URL, USERNAME, PASSWORD);
-        } catch (SQLException e){
-            LOGGER.error("Get connection failure !", e);
+        Connection conn = CONNECTION_HOLDER.get();
+        if(conn == null){
+            try{
+                conn =  DriverManager.getConnection(URL, USERNAME, PASSWORD);
+            } catch (SQLException e){
+                LOGGER.error("Get connection failure !", e);
+                throw new RuntimeException(e);
+            } finally {
+                CONNECTION_HOLDER.set(conn);
+            }
         }
         return conn;
     }
 
-    public static void closeConnection(Connection conn){
+    public static void closeConnection(){
+        Connection conn = CONNECTION_HOLDER.get();
         if(conn != null){
             try{
                 conn.close();
             } catch (SQLException e){
                 LOGGER.error("Close collection failure !", e);
+                throw new RuntimeException(e);
+            } finally {
+                CONNECTION_HOLDER.remove();
             }
         }
     }
 
-    public static <T> List<T> queryEntityList(Class<T> entityClass, Connection conn, String sql, Object... params){
+    public static <T> List<T> queryEntityList(Class<T> entityClass, String sql, Object... params){
         List<T> entityList;
         try{
+            Connection conn = getConnection();
             entityList = QUERY_RUNNNER.query(conn, sql, new BeanListHandler<T>(entityClass), params);
         } catch (SQLException e){
             LOGGER.error("Query entity list failure !", e);
             throw new RuntimeException(e);
         } finally {
-            closeConnection(conn);
+            closeConnection();
         }
         return entityList;
+    }
+
+    public static <T> T queryEntity(Class<T> entityClass, String sql, Object... params){
+        T entity;
+        try{
+            Connection conn = getConnection();
+            entity = QUERY_RUNNNER.query(conn, sql, new BeanHandler<T>(entityClass), params);
+        } catch (SQLException e){
+            LOGGER.error("Query entity list failure !", e);
+            throw new RuntimeException(e);
+        } finally {
+            closeConnection();
+        }
+        return entity;
     }
 }
